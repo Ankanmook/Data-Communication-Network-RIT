@@ -1,0 +1,281 @@
+head	1.3;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.3
+date	2013.01.11.00.38.55;	author axm3244;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2013.01.03.01.19.08;	author axm3244;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2012.12.30.02.44.03;	author axm3244;	state Exp;
+branches;
+next	;
+
+
+desc
+@imap file which contains the main function
+@
+
+
+1.3
+log
+@Added Log In Functionality
+Authentication
+@
+text
+@//  $Id: imap.cpp,v 1.2 2013/01/03 01:19:08 axm3244 Exp axm3244 $
+
+/*  SUMMARY
+ *  Program to  establish an SSL connection to a DCS computer
+ *  and perform operation(s) on that computer
+ *  imap.cpp
+ *
+ *
+ *  REVISION HISTORY
+ *    $Log: imap.cpp,v $
+ *    Revision 1.2  2013/01/03 01:19:08  axm3244
+ *    Added Few Functionalities
+ *    TCP Connection
+ *    Socket Creation
+ *    Context Creation
+ *
+ *    Revision 1.1  2012/12/30 02:44:03  axm3244
+ *    Initial revision
+ *
+ *
+ *
+ *    Author : Ankan Mookherjee
+ */
+
+// Referencing library and header files for pre-processing
+
+#include "SSLFunctions.h"
+
+using namespace std;
+
+
+
+
+/*
+ * Main Function
+ * Program execution begins here and runs the command and passes
+ * arguments into run_session in SSLFunction.cpp
+ * @@param takes two command line argumnet
+ * @@return int
+ */
+
+
+int main()
+{
+    BIO * bio;
+    SSL * ssl;
+    SSL_CTX * ctx;
+
+    int p;
+
+    char * request = "1 LOGIN p740-01e Ankan_Mookherjee\r\n";
+    char r[1024];
+
+    /* Set up the library */
+
+    ERR_load_BIO_strings();
+    SSL_load_error_strings();
+    OpenSSL_add_all_algorithms();
+    SSL_library_init();
+
+    /* Set up the SSL context */
+
+    ctx = SSL_CTX_new(SSLv23_client_method());
+
+    /* Load the trust store */
+
+    if(! SSL_CTX_load_verify_locations(ctx,NULL,"/etc/ssl/certs"))
+    {
+        fprintf(stderr, "Error loading trust store\n");
+        ERR_print_errors_fp(stderr);
+        SSL_CTX_free(ctx);
+        return 0;
+    }
+
+    /* Setup the connection */
+
+    bio = BIO_new_ssl_connect(ctx);
+
+    /* Set the SSL_MODE_AUTO_RETRY flag */
+
+    BIO_get_ssl(bio, & ssl);
+    SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+
+    /* Create and setup the connection */
+
+    BIO_set_conn_hostname(bio, "mailhost.cs.rit.edu:993");
+		
+    if(BIO_do_connect(bio) <= 0)
+    {
+        fprintf(stderr, "Error attempting to connect\n");
+        ERR_print_errors_fp(stderr);
+        BIO_free_all(bio);
+        SSL_CTX_free(ctx);
+        return 0;
+    }
+
+    /* Check the certificate */
+
+    if(SSL_get_verify_result(ssl) != X509_V_OK)
+    {
+        fprintf(stderr, "Certificate verification error: %ld\n", SSL_get_verify_result(ssl));
+        BIO_free_all(bio);
+        SSL_CTX_free(ctx);
+        return 0;
+    }
+
+    /* Send the request */
+
+    BIO_write(bio, request, strlen(request));
+
+    /* Read in the response */
+
+    
+    for(;;)
+    {
+        p = BIO_read(bio, r, 1023);
+        if(p <= 0) break;
+        r[p] = 0;
+        printf("%s", r);
+    }
+    
+
+    /* Close the connection and free the context */
+
+
+	
+    BIO_free_all(bio);
+    SSL_CTX_free(ctx);
+    return 0;
+}
+@
+
+
+1.2
+log
+@Added Few Functionalities
+TCP Connection
+Socket Creation
+Context Creation
+@
+text
+@d1 1
+a1 1
+//  $Id: imap.cpp,v 1.1 2012/12/30 02:44:03 axm3244 Exp axm3244 $
+d11 6
+d41 32
+a72 25
+int main(argc,argv)
+  int argc;
+  char **argv;
+  {
+    SSL_CTX *ctx;
+    SSL *ssl;
+    BIO *sbio;
+    int sock;
+    extern char *optarg;
+    int c;
+
+    while((c=getopt(argc,argv,"h:p:i"))!=-1){
+      switch(c){
+        case 'h':
+          if(!(host=strdup(optarg)))
+            err_exit("Out of memory");
+          break;
+        case 'p':
+          if(!(port=atoi(optarg)))
+            err_exit("Bogus port specified");
+          break;
+        case 'i':
+          require_server_auth=0;
+          break;
+      }
+d75 3
+a77 2
+    /* Build our SSL context*/
+    ctx=initialize_ctx(KEYFILE,PASSWORD);
+d79 43
+a121 2
+    /* Connect the TCP socket*/
+    sock=tcp_connect(host,port);
+d123 1
+a123 16
+    /* Connect the SSL socket */
+    ssl=SSL_new(ctx);
+    sbio=BIO_new_socket(sock,BIO_NOCLOSE);
+    SSL_set_bio(ssl,sbio,sbio);
+
+    if(SSL_connect(ssl)<=0)
+      berr_exit("SSL connect error");
+    if(require_server_auth)
+      check_cert(ssl,host);
+ 
+    /* Now make our HTTP request */
+    http_request(ssl);
+
+    /* Shutdown the socket */
+    destroy_ctx(ctx);
+    close(sock);
+a124 2
+    exit(0);
+  }
+d126 5
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+//  $Id$
+d10 5
+a14 2
+ *    $Log$
+ * 
+d23 1
+a24 1
+using namespace std;
+d35 25
+a59 11
+int main(int argc,char *argv[]){
+
+    const char* hostname;
+    const char* command;
+
+    // Check the value of argc to be 1 and
+    // inform the user of how to use the program
+    if ((argc < 3)&&(argc >0 )) {
+        cout << "Usage is remoteCMD host-name \"command\"  ";
+        cin.get();
+        exit(0);
+d62 2
+a63 5
+    hostname = argv[1];
+    command = argv[2];
+
+    //runs the remote SSH session client
+    run_session(hostname, command);
+d65 2
+a66 2
+    return 0;
+}
+d68 16
+d85 2
+@

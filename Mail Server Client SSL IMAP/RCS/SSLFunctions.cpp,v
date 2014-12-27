@@ -1,0 +1,502 @@
+head	1.4;
+access;
+symbols;
+locks; strict;
+comment	@// @;
+
+
+1.4
+date	2013.01.11.00.38.55;	author axm3244;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2013.01.07.15.32.52;	author axm3244;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2013.01.03.01.19.08;	author axm3244;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2012.12.30.02.44.03;	author axm3244;	state Exp;
+branches;
+next	;
+
+
+desc
+@Contains SSLFunctions necessary for creation of
+SSL connection in the application layer
+@
+
+
+1.4
+log
+@Added Log In Functionality
+Authentication
+@
+text
+@//  $Id: SSLFunctions.cpp,v 1.3 2013/01/07 15:32:52 axm3244 Exp axm3244 $
+
+/*  SUMMARY
+ *  C++ File to establish Keyboard Interactive Authentication
+ *  and execute remote command
+ *  SSHFunctions.cpp
+ *
+ *
+ *  REVISION HISTORY
+ *    $Log: SSLFunctions.cpp,v $
+ *    Revision 1.3  2013/01/07 15:32:52  axm3244
+ *    Certification
+ *    TCP connection Successful
+ *
+ *    Revision 1.2  2013/01/03 01:19:08  axm3244
+ *    Added Few Functionalities
+ *    TCP Connection
+ *    Socket Creation
+ *    Context Creation
+ *
+ *    Revision 1.1  2012/12/30 02:44:03  axm3244
+ *    Initial revision
+ *
+ *
+ *    Author : Ankan Mookherjee
+ *
+ */
+
+
+// Referencing library and header file for pre-processing
+
+#include "SSLFunctions.h"
+
+using namespace std;
+
+
+
+/*
+ * Initialize Context
+ *
+ * Initializing Context method by taking
+ * by SSL library initializing , reporting of error string
+ * and creating a BIO object for SSL Encryption
+ *
+ * @@praram  takes keyfile and password as argument
+ * @@returns pointer to SSL_CTX (ssl context object)
+ */
+
+
+
+/*
+ * Create a TCP connection
+ *
+ * Creates a TCP connection between client and server
+ *
+ * @@praram  takes hostname and port number as argument
+ * @@returns socket
+ */
+
+
+/*
+ * Checks SSL certificate
+ *
+ * Checks SSL certificate during handshaking
+ *
+ * @@praram  SSL context pointer, host name
+ * @@returns void
+ */
+
+
+
+
+/*
+ * Destroy SSL context object
+ *
+ * Destroys SSL context object after its use
+ *
+ * @@praram  SSL context pointer
+ * @@returns void
+ */
+
+@
+
+
+1.3
+log
+@Certification
+TCP connection Successful
+@
+text
+@d1 1
+a1 1
+//  $Id: SSLFunctions.cpp,v 1.2 2013/01/03 01:19:08 axm3244 Exp axm3244 $
+d11 4
+a48 48
+SSL_CTX *initialize_ctx(keyfile,password)
+  char *keyfile;
+  char *password;
+  {
+    SSL_METHOD *meth;
+    SSL_CTX *ctx;
+
+    if(!bio_err){
+      /* Global system initialization*/
+      SSL_library_init();
+      SSL_load_error_strings();
+
+      /* An error write context */
+      bio_err=BIO_new_fp(stderr,BIO_NOCLOSE);
+    }
+
+    /* Set up a SIGPIPE handler */
+    signal(SIGPIPE,sigpipe_handle);
+
+    /* Create our context*/
+    meth=SSLv23_method();
+    ctx=SSL_CTX_new(meth);
+
+    /* Load our keys and certificates*/
+    if(!(SSL_CTX_use_certificate_chain_file(ctx,
+      keyfile)))
+      berr_exit("Can't read certificate file");
+
+    pass=password;
+    SSL_CTX_set_default_passwd_cb(ctx,
+      password_cb);
+    if(!(SSL_CTX_use_PrivateKey_file(ctx,
+      keyfile,SSL_FILETYPE_PEM)))
+      berr_exit("Can't read key file");
+
+    /* Load the CAs we trust*/
+    if(!(SSL_CTX_load_verify_locations(ctx,
+      CA_LIST,0)))
+      berr_exit("Can't read CA list");
+#if (OPENSSL_VERSION_NUMBER < 0x00905100L)
+    SSL_CTX_set_verify_depth(ctx,1);
+#endif
+
+    return ctx;
+  }
+
+
+
+a59 28
+int tcp_connect(host,port)
+  char *host;
+  int port;
+  {
+    struct hostent *hp;
+    struct sockaddr_in addr;
+    int sock;
+
+    if(!(hp=gethostbyname(host)))
+      berr_exit("Couldn't resolve host");
+    memset(&addr,0,sizeof(addr));
+    addr.sin_addr=*(struct in_addr*)
+      hp->h_addr_list[0];
+    addr.sin_family=AF_INET;
+    addr.sin_port=htons(port);
+
+    if((sock=socket(AF_INET,SOCK_STREAM,
+      IPPROTO_TCP))<0)
+      err_exit("Couldn't create socket");
+    if(connect(sock,(struct sockaddr *)&addr,
+      sizeof(addr))<0)
+      err_exit("Couldn't connect socket");
+
+    return sock;
+  }
+
+
+
+a69 21
+void check_cert(ssl,host)
+  SSL *ssl;
+  char *host;
+  {
+    X509 *peer;
+    char peer_CN[256];
+    if(SSL_get_verify_result(ssl)!=X509_V_OK)
+      berr_exit("Certificate doesn't verify");
+    /*Check the cert chain. The chain length
+      is automatically checked by OpenSSL when
+      we set the verify depth in the ctx */
+    /*Check the common name*/
+    peer=SSL_get_peer_certificate(ssl);
+    X509_NAME_get_text_by_NID
+      (X509_get_subject_name(peer),
+      NID_commonName, peer_CN, 256);
+    if(strcasecmp(peer_CN,host))
+    err_exit
+      ("Common name doesn't match host name");
+  }
+
+a81 5
+void destroy_ctx(ctx)
+  SSL_CTX *ctx;
+  {
+    SSL_CTX_free(ctx);
+  }
+@
+
+
+1.2
+log
+@Added Few Functionalities
+TCP Connection
+Socket Creation
+Context Creation
+@
+text
+@d1 1
+a1 1
+//  $Id: SSLFunctions.cpp,v 1.1 2012/12/30 02:44:03 axm3244 Exp axm3244 $
+d11 6
+d35 1
+a35 1
+ * Initialize Context 
+d39 1
+a39 1
+ * and creating a BIO object for 
+d98 1
+a98 1
+ * Creates a TCP connection between client and server 
+d134 1
+a134 1
+ * Checks SSL certificate 
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+//  $Id$
+d10 5
+a14 2
+ *    $Log$
+ *     
+d22 1
+a22 1
+#include "SSHFunctions.h"
+d29 1
+a29 1
+ * Run Session
+d31 3
+a33 4
+ * Opens a session and sets host name and assigns port
+ * for communication for user during an ssh session
+ * Makes call to keyboard interactive method and show remote files
+ * method
+d35 2
+a36 3
+ * @@praram  takes const char * Hostname , const char* Command
+ * as argument
+ * @@returns void
+d39 42
+a80 49
+void run_session(const char* hostname, const char* command){
+
+    //declaring variables
+    ssh_session my_ssh_session ;
+    int verbosity = SSH_LOG_PROTOCOL;
+    int port = 22;
+    int rc;
+    char *password;
+
+    //opening a new session
+    my_ssh_session = ssh_new();
+
+    //verifying that the allocation succeeded
+    if (my_ssh_session == NULL)
+    exit(-1);
+
+    //setting the options to the session host to the host name
+    ssh_options_set(my_ssh_session, SSH_OPTIONS_HOST, hostname);
+
+    //setting the session transaction to be
+    //carried through the default port 22
+    ssh_options_set(my_ssh_session, SSH_OPTIONS_PORT, &port);
+
+
+    //connecting to the server
+    rc= ssh_connect(my_ssh_session);
+    if(rc !=SSH_OK){
+         cerr<<"Error connecting to localhost:"
+         <<ssh_get_error(my_ssh_session)<<endl;
+         exit(-1);
+
+   }
+
+
+    // Keyboard-Interactive Authentication
+    rc = authenticate_kbdint(my_ssh_session);
+
+    //If the authentication is not successfull
+    if (rc != SSH_AUTH_SUCCESS){
+    cerr<<"Error authenticating with password:"
+        <<ssh_get_error(my_ssh_session)<<endl;
+    ssh_disconnect(my_ssh_session);
+    ssh_free(my_ssh_session);
+    exit(-1);
+    }
+    //For successfull authentication
+    else{
+    rc = show_remote_files(my_ssh_session, command);
+    }
+d82 2
+a83 2
+    //diconnecting session from server
+    ssh_disconnect(my_ssh_session);
+a84 2
+    //deallocating the session
+    ssh_free(my_ssh_session);
+a85 1
+}
+d90 1
+a90 1
+ * Keyboard Interactive Authentication
+d92 1
+a92 3
+ * Using Keyboard interactive method by taking
+ * spontaneous direct input from the user to authenticate
+ * user during an ssh session
+d94 2
+a95 2
+ * @@praram  takes ssh_session as argument
+ * @@returns int
+d98 26
+a123 1
+int authenticate_kbdint(ssh_session session){
+a124 52
+    //declaring variables
+    int rc;
+    const char *name, *instruction;
+    int nprompts, iprompt;
+
+    rc = ssh_userauth_kbdint(session, NULL, NULL);
+    while(rc == SSH_AUTH_INFO){
+
+    name = ssh_userauth_kbdint_getname(session);
+    instruction = ssh_userauth_kbdint_getinstruction(session);
+    nprompts =  ssh_userauth_kbdint_getnprompts(session);
+
+    if(strlen(name) >0)
+       cout<<name<<endl;
+    if(strlen(instruction)>0)
+       cout<<instruction<<endl;
+
+    for (iprompt = 0; iprompt < nprompts; iprompt++){
+       const char *prompt;
+       char echo;
+
+       prompt = ssh_userauth_kbdint_getprompt(session, iprompt, &echo);
+       if(echo){
+          char buffer[128], *ptr;
+          cout<<prompt;
+
+          if(fgets(buffer, sizeof(buffer), stdin)==NULL)
+              return SSH_AUTH_ERROR;
+
+          buffer[sizeof(buffer) -1] = '\0';
+
+          if ((ptr = strchr(buffer, '\n')) != NULL)
+              *ptr = '\0';
+
+          if (ssh_userauth_kbdint_setanswer(session, iprompt, buffer) < 0)
+              return SSH_AUTH_ERROR;
+
+              memset(buffer, 0, strlen(buffer));
+          }
+
+          else{
+              char *ptr;
+
+              ptr = getpass(prompt);
+              if(ssh_userauth_kbdint_setanswer(session, iprompt, ptr) < 0)
+                  return SSH_AUTH_ERROR;
+              }
+          }
+          rc = ssh_userauth_kbdint(session, NULL, NULL);
+     }
+  return rc;
+}
+d128 1
+a128 2
+ * Opening of a Shell Session and Displaying remote command
+ * on local computer
+d130 1
+a130 3
+ * Using ssh_channel to open a channel in remote shell
+ * Use this remote to open an ssh_session
+ * displays result of a command interpreter on the remote computer
+d132 2
+a133 2
+ * @@praram  takes ssh_channel and command as argument
+ * @@returns int
+d136 20
+a155 27
+int show_remote_files(ssh_session session, const char* command){
+
+    ssh_channel channel;
+    int rc;
+    char buffer[256];
+    unsigned int nbytes;
+    channel = ssh_channel_new(session);
+
+    if (channel == NULL) return SSH_ERROR;
+
+    rc = ssh_channel_open_session(channel);
+    if (rc != SSH_OK){
+       ssh_channel_free(channel);
+       return rc;
+    }
+
+    //remote executing command
+    rc = ssh_channel_request_exec(channel, command);
+    if (rc != SSH_OK){
+       if( rc ==SSH_ERROR || rc == SSH_AGAIN)
+           cout<<"Incorrect Command or Nonblocking mode"
+               <<"Please try again"<<endl;
+
+       ssh_channel_close(channel);
+       ssh_channel_free(channel);
+       return rc;
+    }
+a156 2
+    //reading our execution of command
+    nbytes = ssh_channel_read(channel, buffer, sizeof(buffer), 0);
+a157 5
+    //if nothing is read. Command is incomplete or wrong
+    if(nbytes ==0){
+    cout<<"Please check your entered command again."<<endl;
+    cout<<"It is either incomplete or it is incorrect. "<<endl;
+    }
+a158 13
+    while (nbytes > 0){
+       if (fwrite(buffer, 1, nbytes, stdout) != nbytes){
+       ssh_channel_close(channel);
+       ssh_channel_free(channel);
+       return SSH_ERROR;
+       }
+       nbytes = ssh_channel_read(channel, buffer, sizeof(buffer), 0);
+    }
+    if (nbytes < 0){
+       ssh_channel_close(channel);
+       ssh_channel_free(channel);
+       return SSH_ERROR;
+    }
+d160 8
+a167 6
+    ssh_channel_send_eof(channel);
+    ssh_channel_close(channel);
+    ssh_channel_free(channel);
+    return SSH_OK;
+
+}
+d169 5
+@

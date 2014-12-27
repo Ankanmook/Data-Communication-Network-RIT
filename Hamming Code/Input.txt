@@ -1,0 +1,22 @@
+Broadband Internet access (cable and DSL) has been replacing dial-up access in many parts of the world. Broadband connections typically offer speeds 700 kbit/s or higher for two-thirds more than the price of dial-up on average.[2]
+However, many areas still remain without high speed Internet despite the eagerness of potential customers. This can be attributed to population, location, or sometimes ISPs' lack of interest due to little chance of profitability and high costs to build the required infrastructure. Some dial-up ISPs have responded to the increased competition by lowering their rates and making dial-up an attractive option for those who merely want email access or basic web browsing.[3][4]
+[edit]Recession and its effect on service
+News reports in 2009 noted a resurgence of dial-up access in the U.S. resulting from a recessionary economy, as a more affordable way of accessing the Internet.[5][6][7] AOL added 200,000 dial-up customers in 2011. The average monthly price of dial-up Internet is $22, compared to $37 for broadband, according to the FCC.[2]
+Certainly high-speed DSL and Cable are available without local phone service, but the cost of this "naked" service is noticeably higher. AT&T offers basic DSL ("Direct Express") without a phone line for $24.95/month,[8] potentially negating any savings from canceling the phone service. Cable companies do not financially penalize a subscriber for not having a local phone; however cable Internet services are usually more expensive if the customer does not subscribe to their television services.
+Social networking sites such as Facebook and Twitter feature mobile editions with limited graphics and reduced functionality, designed for slow Internet connections on mobile devices. These cut-down websites will also perform well on a PC or netbook with a dial-up connection, making modern social networking possible through traditional dial-up Internet access. The affordability of dial-up Internet (and low-end PCs such as netbooks) makes this one viable option for social networking in a recessionary economy.
+[edit]Performance
+
+
+
+An example handshake of a dial-up modem
+
+"Dial up modem noises"
+MENU0:00
+Typical noises of dial-up modem while a modem is establishing connection with a local ISP-server in order to get access to the public Internet.
+Problems listening to this file? See media help.
+Modern dial-up modems typically have a maximum theoretical transfer speed of 56 kbit/s (using the V.90 or V.92 protocol), although in most cases 40–50 kbit/s is the norm. Factors such as phone line noise as well as the quality of the modem itself play a large part in determining connection speeds.
+Some connections may be as low as 20 kbit/s in extremely "noisy" environments, such as in a hotel room where the phone line is shared with many extensions, or in a rural area, many miles from the phone exchange. Other things such as long loops, loading coils, pair gain, electric fences (usually in rural locations), and digital loop carriers can also cripple connections to 20 kbit/s or lower.
+Dial-up connections usually have latency as high as 300 ms or even more; this is longer than for many forms of broadband, such as cable or DSL, but typically less than satellite connections. Longer latency can make online gaming or video conferencing difficult, if not impossible. First-person shooter style games are the most sensitive to latency, making playing them impractical on dial-up.
+Many modern video games do not even include the option to use dial-up. However, some games such as Everquest, Red Faction, Star Wars: Galaxies, Warcraft 3, Final Fantasy XI, Phantasy Star Online, Guild Wars, Unreal Tournament, Halo: Combat Evolved, Audition, Quake 3: Arena, and Ragnarok Online, are capable of running on 56k dial-up.
+An increasing amount of Internet content such as streaming media will not work at dial-up speeds.
+Analog telephone lines are digitally switched and transported inside a Digital Signal 0 once reaching the telephone company's equipment. Digital Signal 0 is 64 kbit/s; therefore a 56 kbit/s connection is the highest that will ever be possible with analog phone lines.

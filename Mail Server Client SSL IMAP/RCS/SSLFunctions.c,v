@@ -1,0 +1,276 @@
+head	1.3;
+access;
+symbols;
+locks
+	axm3244:1.3; strict;
+comment	@ * @;
+
+
+1.3
+date	2013.01.12.03.28.07;	author axm3244;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2013.01.12.00.26.49;	author axm3244;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2013.01.11.00.40.58;	author axm3244;	state Exp;
+branches;
+next	;
+
+
+desc
+@Changed Standard Error Messaging
+@
+
+
+1.3
+log
+@Added Logout
+@
+text
+@//  $Id: SSLFunctions.c,v 1.2 2013/01/12 00:26:49 axm3244 Exp axm3244 $
+
+/*  SUMMARY
+ *  C++ File to establish Keyboard Interactive Authentication
+ *  and execute remote command
+ *  SSHFunctions.cpp
+ *
+ *
+ *  REVISION HISTORY
+ *    $Log: SSLFunctions.c,v $
+ *    Revision 1.2  2013/01/12 00:26:49  axm3244
+ *    Added Reading Email Functionality
+ *    Selecting Email functionality
+ *
+ *    Revision 1.1  2013/01/11 00:40:58  axm3244
+ *    Initial revision
+ *
+ *    Revision 1.4  2013/01/11 00:38:55  axm3244
+ *    Added Log In Functionality
+ *    Authentication
+ *
+ *    Revision 1.3  2013/01/07 15:32:52  axm3244
+ *    Certification
+ *    TCP connection Successful
+ *
+ *    Revision 1.2  2013/01/03 01:19:08  axm3244
+ *    Added Few Functionalities
+ *    TCP Connection
+ *    Socket Creation
+ *    Context Creation
+ *
+ *    Revision 1.1  2012/12/30 02:44:03  axm3244
+ *    Initial revision
+ *
+ *
+ *    Author : Ankan Mookherjee
+ *
+ */
+
+
+// Referencing library and header file for pre-processing
+
+#include "SSLFunctions.h"
+
+using namespace std;
+
+
+
+/*
+ * Initialize Context
+ *
+ * Initializing Context method by taking
+ * by SSL library initializing , reporting of error string
+ * and creating a BIO object for SSL Encryption
+ *
+ * @@praram  takes keyfile and password as argument
+ * @@returns pointer to SSL_CTX (ssl context object)
+ */
+SSL_CTX * initialize_Context()
+{
+    SSL_CTX * ctx;
+
+    /* Set up the library */
+    ERR_load_BIO_strings();
+    SSL_load_error_strings();
+    OpenSSL_add_all_algorithms();
+    SSL_library_init();
+
+
+    /* Set up the SSL context */
+    ctx = SSL_CTX_new(SSLv23_client_method());
+
+    /* Load the certificate from the location in Unix Systems */
+    if(! SSL_CTX_load_verify_locations(ctx,NULL,"/etc/ssl/certs"))
+    {
+        fprintf(stderr, "Error loading trust store\n");
+        ERR_print_errors_fp(stderr);
+        SSL_CTX_free(ctx);
+        exit(0);
+    }
+    
+    return ctx;
+
+}
+
+
+/*
+ * Check TCP connection
+ *
+ * Checks the connection between client and IMAP server
+ *
+ * @@praram  takes hostname and port number as argument
+ * @@returns void
+ */
+void check_Connection(BIO * bio,SSL_CTX *ctx)
+{
+    if(BIO_do_connect(bio) <= 0)
+    {
+        fprintf(stderr, "Error attempting to connect\n");
+        ERR_print_errors_fp(stderr);
+        BIO_free_all(bio);
+        SSL_CTX_free(ctx);
+        exit(0);
+    }
+    
+}
+
+
+
+
+/*
+ * Checks SSL certificate
+ *
+ * Checks SSL certificate during handshaking
+ *
+ * @@praram  SSL pointer, SSL context pointer, host name, Bio pointer
+ * @@returns 1 on success 0 on failure
+ */
+int checkSSLCertificate(SSL * ssl,SSL_CTX *ctx, BIO *bio)
+{
+    if(SSL_get_verify_result(ssl) != X509_V_OK)
+    {
+        fprintf(stderr, "Certificate verification error: %ld\n", 
+	 SSL_get_verify_result(ssl));
+        
+	 BIO_free_all(bio);
+        SSL_CTX_free(ctx);
+        return 0;
+    }
+    else
+    {	
+     return 1;
+    }
+}
+
+/*
+ * Read Write Imap
+ *
+ * Writes command into IMAP server and reads from response
+ *
+ * @@praram  BIO **, character pointer
+ * @@returns void
+ */
+
+void writeReadImap(BIO **bio,const char* msg){
+   char buf[1024];int p;char *pos;char *pos2;char *pos3;
+   BIO_write(*bio, msg, strlen(msg));
+   
+   for(;;){
+       p = BIO_read(*bio, buf, 1024);
+       buf[p] = 0;
+       printf("%s", buf);
+       
+       pos = strstr (buf,"OK Fetch completed.");
+       if(pos != NULL){
+           printf("%s","=======================\n ");
+           break;
+       }
+	pos2 = strstr(buf,"BAD Error");
+	if(pos2!= NULL){
+           printf("%s","XXXXXXXXXXXXX\n");
+           break;
+       }
+
+	pos3 = strstr(buf,"Logout");
+	if(pos3!= NULL){
+	    printf("%s"," EXIT \n");
+           break;
+	}
+   }
+}
+
+
+
+
+
+/*
+ * Destroy SSL context object
+ * and frees the connection after its use
+ *
+ * @@praram  SSL context pointer, BIO pointer
+ * @@returns void
+ */
+
+void destroy_ctx(SSL_CTX *ctx, BIO *bio)
+{
+    BIO_free_all(bio);
+    SSL_CTX_free(ctx);
+}
+
+@
+
+
+1.2
+log
+@Added Reading Email Functionality
+Selecting Email functionality
+@
+text
+@d1 1
+a1 1
+//  $Id: SSLFunctions.c,v 1.1 2013/01/11 00:40:58 axm3244 Exp axm3244 $
+d11 4
+d59 24
+d84 1
+d88 1
+a88 1
+ * Create a TCP connection
+d90 1
+a90 1
+ * Creates a TCP connection between client and server
+d93 1
+a93 1
+ * @@returns socket
+d95 14
+d116 26
+a141 1
+ * @@praram  SSL context pointer, host name
+d144 28
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+//  $Id: SSLFunctions.cpp,v 1.4 2013/01/11 00:38:55 axm3244 Exp $
+d10 4
+a13 1
+ *    $Log: SSLFunctions.cpp,v $
+d80 1
+d83 1
+d85 1
+a85 3
+ * Destroys SSL context object after its use
+ *
+ * @@praram  SSL context pointer
+d88 6
+@

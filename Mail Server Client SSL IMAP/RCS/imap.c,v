@@ -1,0 +1,316 @@
+head	1.3;
+access;
+symbols;
+locks
+	axm3244:1.3; strict;
+comment	@ * @;
+
+
+1.3
+date	2013.01.12.03.28.07;	author axm3244;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2013.01.12.00.26.49;	author axm3244;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2013.01.11.00.40.58;	author axm3244;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.3
+log
+@Added Logout
+@
+text
+@//  $Id: imap.c,v 1.2 2013/01/12 00:26:49 axm3244 Exp axm3244 $
+
+/*  SUMMARY
+ *  Program to  establish an SSL connection to a DCS computer
+ *  and perform operation(s) on that computer
+ *  imap.cpp
+ *
+ *
+ *  REVISION HISTORY
+ *    $Log: imap.c,v $
+ *    Revision 1.2  2013/01/12 00:26:49  axm3244
+ *    Added Reading Email Functionality
+ *    Selecting Email functionality
+ *
+ *    Revision 1.1  2013/01/11 00:40:58  axm3244
+ *    Initial revision
+ *
+ *    Revision 1.3  2013/01/11 00:38:55  axm3244
+ *    Added Log In Functionality
+ *    Authentication
+ *
+ *    Revision 1.2  2013/01/03 01:19:08  axm3244
+ *    Added Few Functionalities
+ *    TCP Connection
+ *    Socket Creation
+ *    Context Creation
+ *
+ *    Revision 1.1  2012/12/30 02:44:03  axm3244
+ *    Initial revision
+ *
+ *
+ *
+ *    Author : Ankan Mookherjee
+ */
+
+// Referencing library and header files for pre-processing
+
+#include "SSLFunctions.h"
+
+using namespace std;
+
+
+/*
+ * Main Function
+ * Program execution begins here and runs the command and passes
+ * arguments into run_session in SSLFunctions.cpp
+ * @@param takes two command line argumnet
+ * @@return int
+ */
+
+int main()
+{
+   
+    /*Declaring Variables*/
+    BIO * bio;
+    SSL * ssl;
+    SSL_CTX * ctx;
+    int p;
+    int check;
+    char * request;
+    char r[1024];
+
+    /* Initializing the context */	
+    ctx = initialize_Context();
+ 
+    /* Setup the connection */
+    bio = BIO_new_ssl_connect(ctx);
+
+    /* Set the SSL_MODE_AUTO_RETRY flag */
+    BIO_get_ssl(bio, & ssl);
+    SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+
+    /* Create and setup the connection */
+    BIO_set_conn_hostname(bio, "mailhost.cs.rit.edu:993");
+		
+    check_Connection(bio,ctx);
+
+    /* Check the certificate */
+    check = checkSSLCertificate(ssl,ctx, bio);
+    if (check ==0) return 0;
+
+    /* Requesting login to account p740-01e@@cs. rit.edu
+    with password: Ankan_Mookherjee and selecting inbox */
+    request ="1 LOGIN p740-01e Ankan_Mookherjee\r\n2 select INBOX\r\n";
+	
+    BIO_write(bio, request, strlen(request));
+    p = BIO_read(bio, r, 1023);
+    //writeReadImap(&bio,request);
+    
+    request = "1 fetch 1 (body[header.fields (from to subject date)])\r\n";
+    writeReadImap(&bio,request);
+    
+    request = "1 fetch 2 (body[header.fields (from to subject date)])\r\n";
+    writeReadImap(&bio,request);
+    
+    request = "1 fetch 3 (body[header.fields (from to subject date)])\r\n";
+    writeReadImap(&bio,request);
+    
+    request = "1 fetch 4 (body[header.fields (from to subject date)])\r\n";
+    writeReadImap(&bio,request);
+    
+    request = "1 fetch 5 (body[header.fields (from to subject date)])\r\n";
+    writeReadImap(&bio,request);
+
+    request = "1 fetch 23 (body[header.fields (from to subject date)])\r\n";
+    writeReadImap(&bio,request);
+    
+    request = "1 fetch 1 body[text]\r\n";
+    writeReadImap(&bio,request);
+    
+    request = "1 fetch 1 body[text]\r\n";
+    writeReadImap(&bio,request);
+    						
+    request = "2 LOGOUT\r\n";
+    writeReadImap(&bio,request);
+
+    /* Close the connection and free the context */	
+    destroy_ctx(ctx,bio);
+
+    return 0;
+}
+@
+
+
+1.2
+log
+@Added Reading Email Functionality
+Selecting Email functionality
+@
+text
+@d1 1
+a1 1
+//  $Id: imap.c,v 1.1 2013/01/11 00:40:58 axm3244 Exp axm3244 $
+d11 4
+a42 18
+void writeReadImap(BIO **bio,const char* msg){
+   char buf[1024];int p;char *pos;
+   BIO_write(*bio, msg, strlen(msg));
+   
+   for(;;){
+       p = BIO_read(*bio, buf, 1024);
+       buf[p] = 0;
+       printf("%s", buf);
+       
+       pos = strstr (buf,"OK Fetch completed.");
+       if(pos != NULL){
+           printf("%s","NOT NULL");
+           break;
+       }
+   }
+}
+
+
+d46 1
+a46 1
+ * arguments into run_session in SSLFunction.cpp
+a50 1
+
+d53 2
+a57 1
+
+d59 2
+a60 2
+
+    char * request = "1 LOGIN p740-01e Ankan_Mookherjee\r\n2 select INBOX\r\n";
+d63 3
+a65 19
+    /* Set up the library */
+    ERR_load_BIO_strings();
+    SSL_load_error_strings();
+    OpenSSL_add_all_algorithms();
+    SSL_library_init();
+
+
+    /* Set up the SSL context */
+    ctx = SSL_CTX_new(SSLv23_client_method());
+
+    /* Load the certificate from the location in Unix Systems */
+    if(! SSL_CTX_load_verify_locations(ctx,NULL,"/etc/ssl/certs"))
+    {
+        fprintf(stderr, "Error loading trust store\n");
+        ERR_print_errors_fp(stderr);
+        SSL_CTX_free(ctx);
+        return 0;
+    }
+
+a72 2
+
+
+d76 1
+a76 8
+    if(BIO_do_connect(bio) <= 0)
+    {
+        fprintf(stderr, "Error attempting to connect\n");
+        ERR_print_errors_fp(stderr);
+        BIO_free_all(bio);
+        SSL_CTX_free(ctx);
+        return 0;
+    }
+d79 6
+a84 9
+    if(SSL_get_verify_result(ssl) != X509_V_OK)
+    {
+        fprintf(stderr, "Certificate verification error: %ld\n", 
+	 SSL_get_verify_result(ssl));
+        
+	 BIO_free_all(bio);
+        SSL_CTX_free(ctx);
+        return 0;
+    }
+d104 10
+a113 2
+				
+	    
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+//  $Id: imap.cpp,v 1.3 2013/01/11 00:38:55 axm3244 Exp $
+d10 4
+a13 1
+ *    $Log: imap.cpp,v $
+d39 16
+d74 1
+a74 1
+    char * request = "1 LOGIN p740-01e Ankan_Mookherjee\r\n";
+a77 1
+
+d83 1
+a84 1
+
+d87 1
+a87 2
+    /* Load the trust store */
+
+a96 1
+
+a99 1
+
+d103 2
+a105 1
+
+a117 1
+
+d120 4
+a123 2
+        fprintf(stderr, "Certificate verification error: %ld\n", SSL_get_verify_result(ssl));
+        BIO_free_all(bio);
+d127 1
+a127 3
+
+    /* Send the request */
+
+d129 11
+a139 3
+
+    /* Read in the response */
+
+d141 2
+a142 7
+    for(;;)
+    {
+        p = BIO_read(bio, r, 1023);
+        if(p <= 0) break;
+        r[p] = 0;
+        printf("%s", r);
+    }
+d144 6
+d151 2
+a152 2
+    /* Close the connection and free the context */
+
+a153 3
+	
+    BIO_free_all(bio);
+    SSL_CTX_free(ctx);
+@

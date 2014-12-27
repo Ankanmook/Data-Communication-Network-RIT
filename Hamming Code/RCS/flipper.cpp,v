@@ -1,0 +1,156 @@
+head	1.4;
+access;
+symbols;
+locks
+	axm3244:1.4; strict;
+comment	@// @;
+
+
+1.4
+date	2013.02.08.03.40.20;	author axm3244;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2013.02.07.18.49.52;	author axm3244;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2013.02.07.18.04.20;	author axm3244;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2013.01.30.02.32.17;	author axm3244;	state Exp;
+branches;
+next	;
+
+
+desc
+@Basic Structure
+@
+
+
+1.4
+log
+@Final Testing and
+Functionality Refinement
+@
+text
+@//  $Id: flipper.cpp,v 1.3 2013/02/07 18:49:52 axm3244 Exp axm3244 $
+
+/*  SUMMARY
+ *
+ *
+ *  REVISION HISTORY
+ *    $Log: flipper.cpp,v $
+ *    Revision 1.3  2013/02/07 18:49:52  axm3244
+ *    Added Empty Check Function
+ *
+ *    Revision 1.2  2013/02/07 18:04:20  axm3244
+ *    Added Bit Decoding and Reading of Bit
+ *
+ *    Revision 1.1  2013/01/30 02:32:17  axm3244
+ *    Initial revision
+ *
+ *
+ *
+ *
+ *    Author : Ankan Mookherjee
+ */
+
+
+
+#include<cstdlib>
+#include<math.h>
+#include<time.h>
+#include<cstdio>
+#include<iostream>
+
+
+using namespace std;
+const int RAW_BIT_SIZE= 8;
+
+
+/*
+ * Main Function
+ * Program execution begins here. 
+ * Reads one byte at a time from input stream
+ * and writes into stdout stream
+ *
+ * @@param takes None
+ * @@return int
+ */
+int main(){
+    char byte;
+    int rnd;
+    /* Using time as random seed*/
+    srand (time(0));
+
+    while(fread(&byte, 1, 1, stdin))
+    {
+	 /* Probability of flipping a bit is 1 percent */
+        if((rnd = rand()%800)< RAW_BIT_SIZE)
+	 {
+
+	     /* Flipping one random bit using XOR gate */
+            byte ^=(1<<rnd);
+        }
+        fwrite(&byte, 1, 1, stdout);
+    }        
+}
+@
+
+
+1.3
+log
+@Added Empty Check Function
+@
+text
+@d1 1
+a1 1
+//  $Id: flipper.cpp,v 1.2 2013/02/07 18:04:20 axm3244 Exp axm3244 $
+d8 3
+d47 2
+a48 1
+    int num;
+d50 1
+d53 3
+a55 2
+        /* Probability of flipping a bit is 1%*/
+        if((num = rand()%800)< RAW_BIT_SIZE){
+d58 1
+a58 1
+            byte ^=(1<<num);
+@
+
+
+1.2
+log
+@Added Bit Decoding and Reading of Bit
+@
+text
+@d1 1
+a1 1
+//  $Id: flipper.cpp,v 1.1 2013/01/30 02:32:17 axm3244 Exp axm3244 $
+d8 3
+d36 3
+a38 1
+ * Reads from stream input and writes into stdout stream
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 1
+a1 1
+//  $Id$
+d7 4
+a10 1
+ *    $Log$
+d17 35
+@
